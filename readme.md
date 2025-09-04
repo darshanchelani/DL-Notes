@@ -504,12 +504,6 @@ $$
 
 ---
 
-Nice! You're building a solid explainer on **Perceptrons** — and this version is already rich in detail. Let's clean it up and format it for proper **Markdown with LaTeX support** so that:
-
-* Math renders cleanly using `$...$` or `$$...$$`
-* Lists and sections are structured clearly
-* It's easy to read on GitHub or in your notes
-
 ---
 
 
