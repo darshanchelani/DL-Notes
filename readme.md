@@ -645,3 +645,202 @@ The Perceptron (a single LTU) acts as a **linear binary classifier**.
 ✔️ If the dataset is **linearly separable**, the Perceptron can learn weights $w$ and bias $b$ to perfectly separate the classes.
 
 
+
+
+## 🧠 The Perceptron (Bias) – Detailed Explanation
+
+---
+
+### 1. What is the Bias?
+
+The **bias** (`b`) is an additional, tunable parameter in an artificial neuron. It is a constant value added to the weighted sum of the inputs *before* it is fed into the activation function.
+
+**Complete pre-activation formula:**
+
+$$
+z = (w_1 \cdot x_1) + (w_2 \cdot x_2) + \dots + (w_n \cdot x_n) + b
+$$
+
+---
+
+### 2. Why Is It Absolutely Essential? (The "Y-Intercept" Analogy)
+
+Think of the bias as the **y-intercept** in the straight-line equation:
+
+$$
+y = mx + c
+$$
+
+#### 👉 Without a Bias:
+
+- The decision boundary becomes:
+  
+  $$
+  w_1 x_1 + w_2 x_2 = 0
+  $$
+
+- This line **must pass through the origin** (0,0)
+- You can change the **slope**, but **not the position**
+
+> 🔴 Major Limitation: Most real-world decision boundaries don’t go through the origin!
+
+#### ✅ With a Bias:
+
+- Decision boundary becomes:
+  
+  $$
+  w_1 x_1 + w_2 x_2 + b = 0
+  $$
+
+- The **bias shifts** the line up/down or left/right
+- This gives the model **flexibility** to position the decision boundary **anywhere**
+
+> ✅ **Weights** control the *tilt*, **Bias** controls the *position*.
+
+---
+
+### 3. Implementation Trick: The "Bias Neuron"
+
+To simplify math and diagrams, we treat the bias as an **input neuron** that always outputs 1.
+
+- It has its own **trainable weight** $w_0$, which *is* the bias $b$
+- So we can write the entire weighted sum as a dot product:
+
+$$
+z = \mathbf{w}^T \cdot \mathbf{x}
+$$
+
+Where:
+- $\mathbf{w} = [w_0, w_1, ..., w_n]$
+- $\mathbf{x} = [1, x_1, ..., x_n]$
+
+  x0 = 1 (Bias Neuron) -----> w0 = b
+
+  x1 (Input 1)       -------> w1
+  
+  x2 (Input 2)       -------> w2
+                      ...
+  xn (Input n)       -------> wn
+```
+
+```
+
+So:
+
+$$
+z = w_0 \cdot 1 + w_1 \cdot x_1 + \dots + w_n \cdot x_n
+$$
+
+---
+
+### 4. Worked Example: Step-by-Step
+
+**Inputs:**  
+- $x = [2, 3]$  
+- $w = [0.6, 0.8]$  
+- $b = -2$
+
+**Activation Function:**  
+Heaviside step function:
+
+$$
+\text{step}(z) = 
+\begin{cases}
+1 & \text{if } z \geq 0 \\
+0 & \text{if } z < 0
+\end{cases}
+$$
+
+#### Step 1: Weighted sum (without bias)
+
+$$
+z = (0.6 \cdot 2) + (0.8 \cdot 3) = 1.2 + 2.4 = 3.6
+$$
+
+#### Step 2: Add the bias
+
+$$
+z = 3.6 + (-2) = 1.6
+$$
+
+#### Step 3: Apply step function
+
+- $1.6 \geq 0$ ⟶ Output = **1**
+
+#### What did the bias do?
+
+It **reduced** the combined stimulation from 3.6 to 1.6.  
+A **negative bias** makes the neuron **less likely to fire** — it acts like a threshold.
+
+---
+
+### 📌 Summary Table
+
+| Concept         | Explanation                                                                 | Analogy                      |
+|----------------|-----------------------------------------------------------------------------|------------------------------|
+| **Bias (`b`)**  | Extra parameter added to the weighted sum: $z = \mathbf{w} \cdot \mathbf{x} + b$ | The **y-intercept** in $y = mx + c$ |
+| **Purpose**     | Shifts decision boundary away from origin.                                | Moves a line up/down         |
+| **Why Needed**  | Without it, the line **must** pass through (0,0) — a severe limitation.    | You can't draw all lines     |
+| **Implementation** | Often added as a **bias neuron** with fixed input $x_0 = 1$ and trainable weight $w_0 = b$ | Always-on input              |
+| **Effect**      | Controls the neuron's base level of excitation.                           | Like raising/lowering the floor |
+
+---
+
+### **Perceptron Training (The Learning Rule)**
+
+#### **1. The Inspiration: Hebb's Rule**
+
+*   **Concept:** Proposed by Donald Hebb, a neuropsychologist.  
+*   **The Phrase:** "Cells that fire together, wire together."  
+*   **Meaning:** If two neurons are activated at the same time, the connection (synapse) between them should be strengthened. This is a foundational idea in neuroscience for how learning might occur in the brain.  
+*   **Limitation:** It's a simple correlation rule. It doesn't account for *errors*. It would strengthen connections even if they lead to wrong outcomes.
+
+#### **2. The Perceptron Learning Rule: Error-Driven Learning**
+
+Frank Rosenblatt's key innovation was creating an **error-correcting** version of Hebb's rule. The Perceptron doesn't just strengthen active connections; it adjusts weights **only when it makes a mistake**, and it adjusts them in a direction that **reduces the error**.
+
+**The Goal of Learning:** To find the optimal weights (`w_i`) and bias (`b`) such that for all training examples, the predicted output (`ŷ`) equals the true output (`y`).
+
+---
+
+### **The Formula: Deconstructing the Learning Rule**
+
+The rule to update a weight is:  
+**`w_i_j(new) = w_i_j(old) + η * (y_j - ŷ_j) * x_i`**
+
+Let's unpack every single component of this crucial equation:
+
+| Component       | Symbol           | Explanation                                                                                               | Role in Learning                                                                                                         |
+|-----------------|------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| **Old Weight**  | `w_i_j(old)`     | The current value of the weight connecting input `i` to output neuron `j`.                                | The starting point for the update.                                                                                       |
+| **Learning Rate** | `η` (eta)       | A small, positive constant (e.g., 0.1, 0.01).                                                             | Controls the **step size** of the update. <br> - **Too High:** The weights change too drastically, causing overshoot. <br> - **Too Low:** Learning is very slow. |
+| **True Label**   | `y_j`            | The correct, desired output for output neuron `j` for the current training example. (e.g., Spam=1, Not Spam=0). | The "ground truth" we want the Perceptron to predict.                                                                    |
+| **Prediction**   | `ŷ_j`            | The output actually produced by the Perceptron for output neuron `j` for the current training example.    | What the model *thinks* the answer is.                                                                                   |
+| **Error**        | `(y_j - ŷ_j)`    | The difference between true label and prediction. Since `y` and `ŷ` are binary, error ∈ { -1, 0, 1 }        | The signal telling the model *if* it was wrong and *in which direction*.                                                 |
+| **Input Value**  | `x_i`            | The value of the `i-th` input feature for the current training example.                                   | Determines **which weights** get adjusted and **how much**. Larger inputs have bigger effects.                           |
+| **New Weight**   | `w_i_j(new)`     | The updated value of the weight.                                                                          | The result of the learning step, hopefully improved.                                                                     |
+
+---
+
+### **How the Rule Works in Practice: The Logic**
+
+The rule updates weights to make the correct prediction more likely next time.
+
+**Scenario 1: Model Under-stimulated (Should have fired, but didn't)**  
+* `y = 1`, `ŷ = 0` → **Error = (1 - 0) = +1**  
+* **Update:** `w_i_new = w_i_old + η * (+1) * x_i`  
+* **Effect:** Weights **increase** → weighted sum `z` gets larger → `ŷ` more likely to be 1 next time.
+
+**Scenario 2: Model Over-stimulated (Fired when it shouldn't have)**  
+* `y = 0`, `ŷ = 1` → **Error = (0 - 1) = -1**  
+* **Update:** `w_i_new = w_i_old + η * (-1) * x_i`  
+* **Effect:** Weights **decrease** → weighted sum `z` gets smaller → `ŷ` more likely to be 0 next time.
+
+**Scenario 3: Correct Prediction**  
+* `y = ŷ` → Error = 0 → **No update needed.**
+
+---
+
+**Note on Bias:**  
+The bias is updated similarly, treating it as a weight for an input always equal to 1:  
+**`b(new) = b(old) + η * (y_j - ŷ_j) * 1`**
